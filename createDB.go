@@ -22,13 +22,13 @@ func main() {
     
     //create tables
     createCrew := `create table Crew (Employee_ID integer not null primary key, Annual_Salary float, Name string, Mans_Cannon integer, Fights_Sky_Pirates integer);`
-    createCrew_Roles := `create table Crew_Roles (Employee_ID integer, Role string);`
-    createCannons := `create table Cannons (Field_of_View string, Floor_Number integer, Crew_Member string);`
-    createCannon_Ammo := `create table Cannon_Ammo (Field_of_View string, Floor_Number integer, Ammunition_Type string);`
+    createCrew_Roles := `create table Crew_Roles (Employee_ID integer references Crew(Employee_ID), Role string);`
+    createCannons := `create table Cannons (Field_of_View string, Floor_Number integer references Floors(Floor_Number), Crew_Member integer references Crew(Employee_ID));`
+    createCannon_Ammo := `create table Cannon_Ammo (Field_of_View string references Cannons(Field_of_View), Floor_Number integer references Floors(Floor_Number), Ammunition_Type string);`
     createFloors := `create table Floors (Floor_Number integer not null primary key);`
-    createCrew_Assigned_Floors := `create table Crew_Assigned_Floors (Employee_ID integer, Floor_Number integer);`
-    createGuest_Rooms := `create table Guest_Rooms (Room_Number integer not null primary key, Nighly_Rate float, Maximum_Occupancy integer, Floor_Number integer);`
-    createPassengers := `create table Passengers (Ticket_Number integer, Name string, Room_Number integer);`
+    createCrew_Assigned_Floors := `create table Crew_Assigned_Floors (Employee_ID integer references Crew(Employee_ID), Floor_Number integer references Floors(Floor_Number));`
+    createGuest_Rooms := `create table Guest_Rooms (Room_Number integer not null primary key, Nighly_Rate float, Maximum_Occupancy integer, Floor_Number integer references Floors(Floor_Number));`
+    createPassengers := `create table Passengers (Ticket_Number integer, Name string, Room_Number integer references Guest_Rooms(Room_Number));`
     
     fmt.Printf("Creating tables... ")
 	_, err = db.Exec(createCrew)
