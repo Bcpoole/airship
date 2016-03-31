@@ -1,0 +1,21 @@
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<script> 
+$(function(){
+  $("#header").load("header.html"); 
+});
+</script> 
+</head>
+
+<span><a href="/view-tables">View Tables</a></span>
+
+<h1>{{.Title}}</h1>
+
+<p>[<a href="/{{.Title}}">edit</a>]</p>
+
+<form action="/login" method="post">
+    Username:<input type="text" name="username">
+    Password:<input type="password" name="password">
+    <input type="submit" value="Login">
+</form>
+
