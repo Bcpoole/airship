@@ -9,12 +9,16 @@ import (
     "fmt"
     _ "github.com/mattn/go-sqlite3"
     "log"
+    "strconv"
 )
 
 type Page struct {
 	Title string
 	Body  []byte
+    
     QueryResults queryResults
+    
+    InsertMessage string
 }
 
 type queryResults struct {
@@ -99,6 +103,7 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.Handl
 	}
 }
 
+//view-tables
 func getTable(w http.ResponseWriter, r *http.Request) {
     if r.Method == "POST" {
         r.ParseForm()
@@ -195,6 +200,83 @@ func getTable(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+//insert-into-tables
+func insertIntoTable(w http.ResponseWriter, r *http.Request) {
+    fmt.Println(r.Method)
+    if r.Method == "POST" {
+        r.ParseForm()
+        
+        roomNum := r.Form["roomNum"][0]
+        passName := r.Form["passName"][0]
+        
+        db, err := sql.Open("sqlite3", "file:airship.db?cache=shared&mode=rwc")
+        if err != nil {
+            log.Fatal(err)
+        }
+        defer db.Close()
+        
+        InsertMessage := ""
+        
+        fmt.Println(passName)
+        
+        PassengerResults := make([]Passenger, 0)
+        passengerRows, err := db.Query("select * from passengers where room_number = " + roomNum)
+        defer passengerRows.Close()
+        for passengerRows.Next() {
+            var Ticket_Number, Room_Number int32
+            var Name string
+            
+            passengerRows.Scan(&Ticket_Number, &Name, &Room_Number)
+            res := Passenger{Ticket_Number, Name, Room_Number}
+            PassengerResults = append(PassengerResults, res)
+        }
+        
+        PassCResults := make([]Passenger, 0)
+        passCRows, err := db.Query("select * from passengers")
+        defer passCRows.Close()
+        for passCRows.Next() {
+            var Ticket_Number, Room_Number int32
+            var Name string
+            
+            passCRows.Scan(&Ticket_Number, &Name, &Room_Number)
+            res := Passenger{Ticket_Number, Name, Room_Number}
+            PassCResults = append(PassCResults, res)
+        }
+        passengerCount := len(PassCResults)
+        
+        var maxOcc int32
+        roomRows, err := db.Query("select Maximum_Occupancy from guest_rooms where room_number = " + roomNum)
+        defer roomRows.Close()
+        for roomRows.Next() {
+            var Maximum_Occupancy int32
+            
+            roomRows.Scan(&Maximum_Occupancy)
+            maxOcc = Maximum_Occupancy
+            
+            break;
+        }
+        
+        if maxOcc == int32(len(PassengerResults)) {
+            InsertMessage = "Cannot add! Room is filled!"
+        } else {
+            ticketNum := passengerCount + 1
+            _, err = db.Exec("insert into Passengers(Ticket_Number, Name, Room_Number) values (" + strconv.Itoa(ticketNum) + ", '" + passName + "', " + roomNum + ")")
+            if err != nil {
+                log.Fatal(err)
+                InsertMessage = "Failed to insert!"
+            } else {
+                InsertMessage = "Successfully inserted!"
+            }
+        }
+        
+        p := &Page{ InsertMessage: InsertMessage }
+        renderTemplate(w, "insert-into-tables", p)
+        //http.Redirect(w, r, "/insert-into-tables/", 301)
+    } else if r.Method == "GET" {
+        
+    }
+}
+
 func main() {
     fs := http.FileServer(http.Dir("css"))
     http.Handle("/css/", http.StripPrefix("/css/", fs))
@@ -204,7 +286,8 @@ func main() {
     http.HandleFunc("/insert-into-tables/", makeHandler(basicHandler))
     http.HandleFunc("/query-tables/", makeHandler(basicHandler))  
     
-    http.HandleFunc("/", getTable)
+    http.HandleFunc("/view-tables/getTable", getTable)
+    http.HandleFunc("/", insertIntoTable)
 
     fmt.Println("Server listening on port 8080...")
 	http.ListenAndServe(":8080", nil)

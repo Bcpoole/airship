@@ -13,6 +13,35 @@
     </table>
 </head>
 <body>
-
+<h1>Insert into Passengers table</h1>
+<i>*Ticket Numbers are automatically generated</i>
+<form action="/insertIntoTable" method="post">
+    <div>
+        <label>Passenger Name: </label>
+        <div class="ui input">
+            <input type="text" placeholder="John Doe" name="passName"/>
+        </div>
+    </div>
+    <div>
+        <label>Room Number: </label>
+        <select name="roomNum">
+            <option value="0">0</option>
+            <option value="100">100</option>
+            <option value="101">101</option>
+            <option value="102">102</option>
+            <option value="103">103</option>
+            <option value="200">200</option>
+            <option value="201">201</option>
+            <option value="202">202</option>
+            <option value="203">203</option>
+            <option value="204">204</option>
+            <option value="205">205</option>
+        </select>
+    </div>
+    <input type="submit" value="Submit">
+</form>
+<div>
+    {{.InsertMessage}}
+</div>
 </body>
 </html>
