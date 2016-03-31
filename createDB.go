@@ -27,7 +27,7 @@ func main() {
     createCannon_Ammo := `create table Cannon_Ammo (Field_of_View string references Cannons(Field_of_View), Floor_Number integer references Floors(Floor_Number), Ammunition_Type string);`
     createFloors := `create table Floors (Floor_Number integer not null primary key);`
     createCrew_Assigned_Floors := `create table Crew_Assigned_Floors (Employee_ID integer references Crew(Employee_ID), Floor_Number integer references Floors(Floor_Number));`
-    createGuest_Rooms := `create table Guest_Rooms (Room_Number integer not null primary key, Nighly_Rate float, Maximum_Occupancy integer, Floor_Number integer references Floors(Floor_Number));`
+    createGuest_Rooms := `create table Guest_Rooms (Room_Number integer not null primary key, Nightly_Rate float, Maximum_Occupancy integer, Floor_Number integer references Floors(Floor_Number));`
     createPassengers := `create table Passengers (Ticket_Number integer, Name string, Room_Number integer references Guest_Rooms(Room_Number));`
     
     fmt.Printf("Creating tables... ")
@@ -166,7 +166,7 @@ func main() {
 	}
     
     fmt.Println("\tGuest_Rooms")
-	_, err = db.Exec("insert into Guest_Rooms(Room_Number, Nighly_Rate, Maximum_Occupancy, Floor_Number) values " +
+	_, err = db.Exec("insert into Guest_Rooms(Room_Number, Nightly_Rate, Maximum_Occupancy, Floor_Number) values " +
     "(200, 179.99, 2, 2), " +
     "(201, 179.99, 2, 2), " +
     "(202, 179.99, 2, 2), " +
