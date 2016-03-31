@@ -56,7 +56,7 @@ func viewTableHandler(w http.ResponseWriter, r *http.Request, title string) {
 		http.Redirect(w, r, "/view-table/"+title, http.StatusFound)
 		return
 	}
-	renderTemplate(w, "table", p)
+	renderTemplate(w, "view-table", p)
 }
 
 var templates = template.Must(template.ParseFiles("home.html",
@@ -180,14 +180,12 @@ func getTable(w http.ResponseWriter, r *http.Request) {
         
         p := &Page{Title: title, QueryResults: results}
         renderTemplate(w, "view-tables", p)
-            
-        http.Redirect(w, r, "/view-tables/", 301)
     } else if r.Method == "GET" {
         
     }
 }
 
-func main() {
+func main() {    
     http.HandleFunc("/home/", makeHandler(basicHandler))
     http.HandleFunc("/view-tables/", makeHandler(basicHandler))    
     
