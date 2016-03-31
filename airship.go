@@ -14,7 +14,18 @@ import (
 type Page struct {
 	Title string
 	Body  []byte
-    TableRecords []Crew
+    QueryResults queryResults
+}
+
+type queryResults struct {
+    CrewResults []Crew
+    CrewRoleResults []Crew_Role
+    CrewFloorResults []Crew_Assigned_Floor
+    CannonResults []Cannon
+    CannonAmmoResults []Cannon_Ammo
+    FloorResults []Floor
+    GuestRoomResults []Guest_Room
+    PassengerResults []Passenger
 }
 
 func (p *Page) save() error {
@@ -93,8 +104,6 @@ func getTable(w http.ResponseWriter, r *http.Request) {
         
         title := r.Form["tables"][0]
         
-        fmt.Println("table:", r.Form["tables"])
-        
         db, err := sql.Open("sqlite3", "./airship.db")
         if err != nil {
             log.Fatal(err)
@@ -107,22 +116,81 @@ func getTable(w http.ResponseWriter, r *http.Request) {
         values := make([]interface{}, count)
         valuePtrs := make([]interface{}, count)*/
         
-        tableRecords := make([]Crew, 0)
+        CrewResults := make([]Crew, 0)
+        CrewRoleResults := make([]Crew_Role, 0)
+        CrewFloorResults := make([]Crew_Assigned_Floor, 0)
+        CannonResults := make([]Cannon, 0)
+        CannonAmmoResults := make([]Cannon_Ammo, 0)
+        FloorResults := make([]Floor, 0)
+        GuestRoomResults := make([]Guest_Room, 0)
+        PassengerResults := make([]Passenger, 0)
+        
+        //Make slice of colum headers**************
         
         defer rows.Close()
         for rows.Next() {
-            var Employee_ID, Mans_Cannon, Fights_Sky_Pirates int32
-            var Name string
-            var Annual_Salary float64
-            
-            rows.Scan(&Employee_ID, &Annual_Salary, &Name, &Mans_Cannon, &Fights_Sky_Pirates)
-            
-            crew := Crew{Employee_ID, Mans_Cannon, Fights_Sky_Pirates, Name, Annual_Salary}
-            
-            tableRecords = append(tableRecords, crew)
+            switch title {
+                case "crew":
+                    var Employee_ID, Mans_Cannon, Fights_Sky_Pirates int32
+                    var Name string
+                    var Annual_Salary float64
+                    
+                    rows.Scan(&Employee_ID, &Annual_Salary, &Name, &Mans_Cannon, &Fights_Sky_Pirates)
+                    res := Crew{Employee_ID, Mans_Cannon, Fights_Sky_Pirates, Name, Annual_Salary}
+                    CrewResults = append(CrewResults, res)
+                case "crew_roles":
+                    var Employee_ID int32
+                    var Role string
+                    
+                    rows.Scan(&Employee_ID, &Role)
+                    res := Crew_Role{Employee_ID, Role}
+                    CrewRoleResults = append(CrewRoleResults, res)
+                case "crew_assigned_floors":
+                    var Employee_ID, Floor_Number int32
+                    
+                    rows.Scan(&Employee_ID, &Floor_Number)
+                    res := Crew_Assigned_Floor{Employee_ID, Floor_Number}
+                    CrewFloorResults = append(CrewFloorResults, res)
+                case "cannons":
+                    var Field_of_View string
+                    var Floor_Number, Crew_Member int32
+                    
+                    rows.Scan(&Field_of_View, &Floor_Number, &Crew_Member)
+                    res := Cannon{Field_of_View, Floor_Number, Crew_Member}
+                    CannonResults = append(CannonResults, res)
+                case "cannon_ammo":
+                    var Field_of_View, Ammunition_Type string
+                    var Floor_Number int32
+                    
+                    rows.Scan(&Field_of_View, &Ammunition_Type, &Floor_Number)
+                    res := Cannon_Ammo{Field_of_View, Ammunition_Type, Floor_Number}
+                    CannonAmmoResults = append(CannonAmmoResults, res)
+                case "floors":
+                    var Floor_Number int32
+                    
+                    rows.Scan(&Floor_Number)
+                    res := Floor{Floor_Number}
+                    FloorResults = append(FloorResults, res)
+                case "guest_rooms":
+                    var Room_Number, Maximum_Occupancy, Floor_Number int32
+                    var Nightly_Rate float64
+                    
+                    rows.Scan(&Room_Number, &Maximum_Occupancy, &Floor_Number, &Nightly_Rate)
+                    res := Guest_Room{Room_Number, Maximum_Occupancy, Floor_Number, Nightly_Rate}
+                    GuestRoomResults = append(GuestRoomResults, res)
+                case "passengers":
+                    var Ticket_Number, Room_Number int32
+                    var Name string
+                    
+                    rows.Scan(&Ticket_Number, &Room_Number, &Name)
+                    res := Passenger{Ticket_Number, Room_Number, Name}
+                    PassengerResults = append(PassengerResults, res)
+                default:
+                    panic("table " + title + " does not exist!")
+            }
         }
         
-        fmt.Println(tableRecords[0])
+        results := queryResults { CrewResults, CrewRoleResults, CrewFloorResults, CannonResults, CannonAmmoResults, FloorResults, GuestRoomResults, PassengerResults }
 
         /*for rows.Next() {
 
@@ -153,7 +221,7 @@ func getTable(w http.ResponseWriter, r *http.Request) {
             break;
         }*/
         
-        p := &Page{Title: title, TableRecords: tableRecords}
+        p := &Page{Title: title, QueryResults: results}
         renderTemplate(w, "view-tables", p)
     }
 }
