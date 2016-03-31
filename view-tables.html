@@ -1,6 +1,16 @@
-<div>
-    <span><a href="/home/">Home</a></span>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="/css/style.css" rel="stylesheet">
+    
+    <div>
+        <span><a href="/home/">Home</a></span>
+        <span><a href="/view-tables/">Display Tables</a></span>
+        <span><a href="/query-tables/">Query Tables</a></span>
+        <span><a href="/insert-into-tables/">Insert into Tables</a></span>
+    </div>
+</head>
+<body>
 
 <div>Select a table to view the data of:</div>
 
@@ -23,7 +33,7 @@
     <h1>{{.Title}}</h1>
 {{end}}
 
-<table>
+<table class="ui celled striped table">
     <tr>
         {{range .QueryResults.ColumnHeaders}}
         <th>{{.}}</th>
@@ -94,3 +104,6 @@
         {{end}}
     {{end}}
 </table>
+
+</body>
+</html>

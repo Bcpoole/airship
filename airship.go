@@ -69,7 +69,7 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	}
 }
 
-var validPath = regexp.MustCompile("^/(home|view-tables)/([a-zA-Z0-9]*)$")
+var validPath = regexp.MustCompile("^/(home|view-tables|style)/([a-zA-Z0-9]*)$")
 
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -185,7 +185,10 @@ func getTable(w http.ResponseWriter, r *http.Request) {
     }
 }
 
-func main() {    
+func main() {
+    fs := http.FileServer(http.Dir("css"))
+    http.Handle("/css/", http.StripPrefix("/css/", fs))
+    
     http.HandleFunc("/home/", makeHandler(basicHandler))
     http.HandleFunc("/view-tables/", makeHandler(basicHandler))    
     
