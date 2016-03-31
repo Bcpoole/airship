@@ -59,8 +59,18 @@ func viewTableHandler(w http.ResponseWriter, r *http.Request, title string) {
 	renderTemplate(w, "view-table", p)
 }
 
+func queryTablesHandler(w http.ResponseWriter, r *http.Request, title string) {
+	p, err := loadPage(title)
+    
+	if err != nil {
+		http.Redirect(w, r, "/query-tables/", http.StatusFound)
+		return
+	}
+	renderTemplate(w, "query-tables", p)
+}
+
 var templates = template.Must(template.ParseFiles("home.html",
-"view-tables.html"))
+"view-tables.html", "query-tables.html", "insert-into-tables.html"))
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", p)
@@ -69,7 +79,7 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	}
 }
 
-var validPath = regexp.MustCompile("^/(home|view-tables|style)/([a-zA-Z0-9]*)$")
+var validPath = regexp.MustCompile("^/(home|view-tables|query-tables|insert-into-tables)/([a-zA-Z0-9]*)$")
 
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -190,7 +200,9 @@ func main() {
     http.Handle("/css/", http.StripPrefix("/css/", fs))
     
     http.HandleFunc("/home/", makeHandler(basicHandler))
-    http.HandleFunc("/view-tables/", makeHandler(basicHandler))    
+    http.HandleFunc("/view-tables/", makeHandler(basicHandler))
+    http.HandleFunc("/insert-into-tables/", makeHandler(basicHandler))
+    http.HandleFunc("/query-tables/", makeHandler(basicHandler))  
     
     http.HandleFunc("/", getTable)
 
