@@ -1,0 +1,27 @@
+<div>See my tables</div>
+
+<form action="/login" method="post">
+    Username:<input type="text" name="username">
+    Password:<input type="password" name="password">
+    <input type="submit" value="Login">
+</form>
+
+<form action="/getTable" method="post">
+    <select name="tables">
+        <option value="crew">Crew</option>
+        <option value="crew_roles">Crew Roles</option>
+        <option value="crew_assigned_floors">Crew Assigned Floors</option>
+        <option value="floors">Floors</option>
+        <option value="cannons">Cannons</option>
+        <option value="cannon_ammo">Cannon Ammo</option>
+        <option value="guest_rooms">Guest Rooms</option>
+        <option value="passengers">Passengers</option>
+    </select>
+    <input type="submit" value="View">
+</form>
+
+<ul>
+    {{range .TableRecords}}
+    <li>{{.}}</li>
+    {{end}}
+</ul>
