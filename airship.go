@@ -38,7 +38,6 @@ func (p *Page) save() error {
 func loadPage(title string) (*Page, error) {
 	filename := title + ".txt"
 	body, err := ioutil.ReadFile(filename)
-    fmt.Println("load page " + title)
 	if err != nil {
 		return nil, err
 	}
@@ -60,17 +59,8 @@ func viewTableHandler(w http.ResponseWriter, r *http.Request, title string) {
 	renderTemplate(w, "table", p)
 }
 
-func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
-	p, err := loadPage(title)
-	if err != nil {
-		http.Redirect(w, r, "/edit/"+title, http.StatusFound)
-		return
-	}
-	renderTemplate(w, "view", p)
-}
-
-var templates = template.Must(template.ParseFiles("edit.html", "view.html", "home.html",
-"view-tables.html", "table.html"))
+var templates = template.Must(template.ParseFiles("home.html",
+"view-tables.html"))
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	err := templates.ExecuteTemplate(w, tmpl+".html", p)
@@ -79,7 +69,7 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	}
 }
 
-var validPath = regexp.MustCompile("^/(edit|save|view|home|view-tables)/([a-zA-Z0-9]*)$")
+var validPath = regexp.MustCompile("^/(home|view-tables)/([a-zA-Z0-9]*)$")
 
 func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -190,14 +180,16 @@ func getTable(w http.ResponseWriter, r *http.Request) {
         
         p := &Page{Title: title, QueryResults: results}
         renderTemplate(w, "view-tables", p)
+            
+        http.Redirect(w, r, "/view-tables/", 301)
+    } else if r.Method == "GET" {
+        
     }
 }
 
 func main() {
     http.HandleFunc("/home/", makeHandler(basicHandler))
     http.HandleFunc("/view-tables/", makeHandler(basicHandler))    
-    
-	http.HandleFunc("/view/", makeHandler(viewHandler))
     
     http.HandleFunc("/", getTable)
 
