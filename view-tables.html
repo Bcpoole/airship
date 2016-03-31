@@ -1,10 +1,4 @@
-<div>See my tables</div>
-
-<form action="/login" method="post">
-    Username:<input type="text" name="username">
-    Password:<input type="password" name="password">
-    <input type="submit" value="Login">
-</form>
+<div>Select a table to view the data of:</div>
 
 <form action="/getTable" method="post">
     <select name="tables">
@@ -20,8 +14,79 @@
     <input type="submit" value="View">
 </form>
 
-<ul>
-    {{range .TableRecords}}
-    <li>{{.}}</li>
+{{if eq .Title "view-tables"}}
+{{else}}
+    <h1>{{.Title}}</h1>
+{{end}}
+
+<table>
+    <tr>
+        {{range .QueryResults.ColumnHeaders}}
+        <th>{{.}}</th>
+        {{end}}
+    </tr>
+    {{if eq .Title "crew"}}
+        {{range .QueryResults.CrewResults}}
+        <tr>
+            <td>{{.Employee_ID}}</td>
+            <td>{{.Annual_Salary}}</td>
+            <td>{{.Name}}</td>
+            <td>{{.Mans_Cannon}}</td>
+            <td>{{.Fights_Sky_Pirates}}</td>
+        </tr>
+        {{end}}
+    {{else if eq .Title "crew_roles"}}
+        {{range .QueryResults.CrewRoleResults}}
+        <tr>
+            <td>{{.Employee_ID}}</td>
+            <td>{{.Role}}</td>
+        </tr>
+        {{end}}
+    {{else if eq .Title "crew_assigned_floors"}}
+        {{range .QueryResults.CrewFloorResults}}
+        <tr>
+            <td>{{.Employee_ID}}</td>
+            <td>{{.Floor_Number}}</td>
+        </tr>
+        {{end}}
+    {{else if eq .Title "cannons"}}
+        {{range .QueryResults.CannonResults}}
+        <tr>
+            <td>{{.Field_of_View}}</td>
+            <td>{{.Floor_Number}}</td>
+            <td>{{.Crew_Member}}</td>
+        </tr>
+        {{end}}
+    {{else if eq .Title "cannon_ammo"}}
+        {{range .QueryResults.CannonAmmoResults}}
+        <tr>
+            <td>{{.Field_of_View}}</td>
+            <td>{{.Floor_Number}}</td>
+            <td>{{.Ammunition_Type}}</td>
+        </tr>
+        {{end}}
+    {{else if eq .Title "floors"}}
+        {{range .QueryResults.FloorResults}}
+        <tr>
+            <td>{{.Floor_Number}}</td>
+        </tr>
+        {{end}}
+    {{else if eq .Title "guest_rooms"}}
+        {{range .QueryResults.GuestRoomResults}}
+        <tr>
+            <td>{{.Room_Number}}</td>
+            <td>{{.Nightly_Rate}}</td>
+            <td>{{.Maximum_Occupancy}}</td>
+            <td>{{.Floor_Number}}</td>
+        </tr>
+        {{end}}
+    {{else if eq .Title "passengers"}}
+        {{range .QueryResults.PassengerResults}}
+        <tr>
+            <td>{{.Ticket_Number}}</td>
+            <td>{{.Name}}</td>
+            <td>{{.Room_Number}}</td>
+        </tr>
+        {{end}}
     {{end}}
-</ul>
+</table>

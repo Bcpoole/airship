@@ -18,6 +18,8 @@ type Page struct {
 }
 
 type queryResults struct {
+    ColumnHeaders []string
+    
     CrewResults []Crew
     CrewRoleResults []Crew_Role
     CrewFloorResults []Crew_Assigned_Floor
@@ -44,7 +46,6 @@ func loadPage(title string) (*Page, error) {
 }
 
 func basicHandler(w http.ResponseWriter, r *http.Request, title string) {
-    fmt.Println("My title is: " + title)
 	p := &Page{Title: title, Body: nil}
 	renderTemplate(w, title, p)
 }
@@ -111,10 +112,7 @@ func getTable(w http.ResponseWriter, r *http.Request) {
         defer db.Close()
         rows, err := db.Query("select * from " + title)
         
-        /*columns, _ := rows.Columns()
-        count := len(columns)
-        values := make([]interface{}, count)
-        valuePtrs := make([]interface{}, count)*/
+        columns, _ := rows.Columns()
         
         CrewResults := make([]Crew, 0)
         CrewRoleResults := make([]Crew_Role, 0)
@@ -124,8 +122,6 @@ func getTable(w http.ResponseWriter, r *http.Request) {
         FloorResults := make([]Floor, 0)
         GuestRoomResults := make([]Guest_Room, 0)
         PassengerResults := make([]Passenger, 0)
-        
-        //Make slice of colum headers**************
         
         defer rows.Close()
         for rows.Next() {
@@ -162,8 +158,8 @@ func getTable(w http.ResponseWriter, r *http.Request) {
                     var Field_of_View, Ammunition_Type string
                     var Floor_Number int32
                     
-                    rows.Scan(&Field_of_View, &Ammunition_Type, &Floor_Number)
-                    res := Cannon_Ammo{Field_of_View, Ammunition_Type, Floor_Number}
+                    rows.Scan(&Field_of_View, &Floor_Number, &Ammunition_Type)
+                    res := Cannon_Ammo{Field_of_View, Floor_Number, Ammunition_Type}
                     CannonAmmoResults = append(CannonAmmoResults, res)
                 case "floors":
                     var Floor_Number int32
@@ -175,51 +171,22 @@ func getTable(w http.ResponseWriter, r *http.Request) {
                     var Room_Number, Maximum_Occupancy, Floor_Number int32
                     var Nightly_Rate float64
                     
-                    rows.Scan(&Room_Number, &Maximum_Occupancy, &Floor_Number, &Nightly_Rate)
-                    res := Guest_Room{Room_Number, Maximum_Occupancy, Floor_Number, Nightly_Rate}
+                    rows.Scan(&Room_Number, &Nightly_Rate, &Maximum_Occupancy, &Floor_Number)
+                    res := Guest_Room{Room_Number, Nightly_Rate, Maximum_Occupancy, Floor_Number}
                     GuestRoomResults = append(GuestRoomResults, res)
                 case "passengers":
                     var Ticket_Number, Room_Number int32
                     var Name string
                     
-                    rows.Scan(&Ticket_Number, &Room_Number, &Name)
-                    res := Passenger{Ticket_Number, Room_Number, Name}
+                    rows.Scan(&Ticket_Number, &Name, &Room_Number)
+                    res := Passenger{Ticket_Number, Name, Room_Number}
                     PassengerResults = append(PassengerResults, res)
                 default:
                     panic("table " + title + " does not exist!")
             }
         }
         
-        results := queryResults { CrewResults, CrewRoleResults, CrewFloorResults, CannonResults, CannonAmmoResults, FloorResults, GuestRoomResults, PassengerResults }
-
-        /*for rows.Next() {
-
-            for i, _ := range columns {
-                valuePtrs[i] = &values[i]
-            }
-
-            rows.Scan(valuePtrs...)
-
-            for i, col := range columns {
-
-                var v interface{}
-
-                val := values[i]
-
-                b, ok := val.([]byte)
-
-                if (ok) {
-                    v = string(b)
-                } else {
-                    v = val
-                }
-                
-
-                fmt.Println(col, v)
-            }
-            
-            break;
-        }*/
+        results := queryResults { columns, CrewResults, CrewRoleResults, CrewFloorResults, CannonResults, CannonAmmoResults, FloorResults, GuestRoomResults, PassengerResults }
         
         p := &Page{Title: title, QueryResults: results}
         renderTemplate(w, "view-tables", p)
@@ -234,6 +201,7 @@ func main() {
     
     http.HandleFunc("/", getTable)
 
+    fmt.Println("Server listening on port 8080...")
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -255,17 +223,20 @@ type Cannon struct {
     Floor_Number, Crew_Member int32
 }
 type Cannon_Ammo struct {
-    Field_of_View, Ammunition_Type string
+    Field_of_View string
     Floor_Number int32
+    Ammunition_Type string
 }
 type Floor struct {
     Floor_Number int32
 }
 type Guest_Room struct {
-    Room_Number, Maximum_Occupancy, Floor_Number int32
+    Room_Number int32
     Nightly_Rate float64
+    Maximum_Occupancy, Floor_Number int32
 }
 type Passenger struct {
-    Ticket_Number, Room_Number int32
+    Ticket_Number int32
     Name string
+    Room_Number int32
 }
