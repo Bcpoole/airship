@@ -13,6 +13,66 @@
     </table>
 </head>
 <body>
-
+<p>
+    <i>SELECT * FROM <b>Cannons</b> WHERE <b>Field_of_View</b> = <b>?</b></i>
+    <form action="/queryTable1" method="post">
+        <div>
+            <label>Field of View: </label>
+            <select name="fov">
+                <option value="Bow">Bow</option>
+                <option value="Port">Port</option>
+                <option value="Starboard">Starboard</option>
+                <option value="Stern">Stern</option>
+            </select>
+        </div>
+        <input type="submit" value="Submit">
+    </form>
+</p>
+<p>
+    <i>SELECT <b>Name</b>, <b>Role</b>, <b>Annual_Salary</b> FROM <b>crew</b> INNER JOIN <b>crew_roles</b> ON <b>crew.Employee_ID</b> = <b>crew_roles.Employee_ID</b> WHERE <b>Annual_Salary</b> ? ?</i>
+    <form action="/queryTable2" method="post">
+        <div>
+            <label>Operator: </label>
+            <select name="op">
+                <option value="=">=</option>
+                <option value="<">&lt;</option>
+                <option value="<=">&lt;=</option>
+                <option value=">">&gt;</option>
+                <option value=">=">&gt;=</option>
+            </select>
+        </div>
+        <div>
+            <label>Value: </label>
+        <div class="ui input">
+            <input type="number" placeholder="50000" name="pay"/>
+        </div>
+        </div>
+        <input type="submit" value="Submit">
+    </form>
+</p>
+<table class="ui celled striped table">
+    <tr>
+        {{range .QueryResults.ColumnHeaders}}
+        <th>{{.}}</th>
+        {{end}}
+    </tr>
+    {{if eq .Title "query1"}}
+        {{range .QueryResults.CannonResults}}
+        <tr>
+            <td>{{.Field_of_View}}</td>
+            <td>{{.Floor_Number}}</td>
+            <td>{{.Crew_Member}}</td>
+        </tr>
+        {{end}}
+    {{else if eq .Title "query2"}}
+        {{range .QueryResults.JoinQueryResults}}
+        <tr>
+            <td>{{.Name}}</td>
+            <td>{{.Role}}</td>
+            <td>{{.Annual_Salary}}</td>
+        </tr>
+        {{end}}
+    {{end}}
+</table>
 </body>
 </html>

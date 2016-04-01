@@ -32,6 +32,8 @@ type queryResults struct {
     FloorResults []Floor
     GuestRoomResults []Guest_Room
     PassengerResults []Passenger
+    
+    JoinQueryResults []JoinQuery
 }
 
 func (p *Page) save() error {
@@ -191,7 +193,7 @@ func getTable(w http.ResponseWriter, r *http.Request) {
             }
         }
         
-        results := queryResults { columns, CrewResults, CrewRoleResults, CrewFloorResults, CannonResults, CannonAmmoResults, FloorResults, GuestRoomResults, PassengerResults }
+        results := queryResults { columns, CrewResults, CrewRoleResults, CrewFloorResults, CannonResults, CannonAmmoResults, FloorResults, GuestRoomResults, PassengerResults, nil }
         
         p := &Page{Title: title, QueryResults: results}
         renderTemplate(w, "view-tables", p)
@@ -202,7 +204,6 @@ func getTable(w http.ResponseWriter, r *http.Request) {
 
 //insert-into-tables
 func insertIntoTable(w http.ResponseWriter, r *http.Request) {
-    fmt.Println(r.Method)
     if r.Method == "POST" {
         r.ParseForm()
         
@@ -216,8 +217,6 @@ func insertIntoTable(w http.ResponseWriter, r *http.Request) {
         defer db.Close()
         
         InsertMessage := ""
-        
-        fmt.Println(passName)
         
         PassengerResults := make([]Passenger, 0)
         passengerRows, err := db.Query("select * from passengers where room_number = " + roomNum)
@@ -277,6 +276,78 @@ func insertIntoTable(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+//query-tables
+func queryTable1(w http.ResponseWriter, r *http.Request) {
+    r.ParseForm()
+    
+    fov := r.Form["fov"][0]
+    
+    db, err := sql.Open("sqlite3", "file:airship.db?cache=shared&mode=rwc")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer db.Close()
+    
+    CannonResults := make([]Cannon, 0)
+    rows, err := db.Query("select * from cannons where Field_of_View = '" + fov + "'")
+    columns, _ := rows.Columns()
+    defer rows.Close()
+    
+    for rows.Next() {
+        var Field_of_View string
+        var Floor_Number, Crew_Member int32
+        
+        rows.Scan(&Field_of_View, &Floor_Number, &Crew_Member)
+        res := Cannon{Field_of_View, Floor_Number, Crew_Member}
+        CannonResults = append(CannonResults, res)
+    }
+    results := queryResults { ColumnHeaders: columns, CannonResults : CannonResults }
+    
+    p := &Page{ Title: "query1", QueryResults : results }
+    renderTemplate(w, "query-tables", p)
+}
+func queryTable2(w http.ResponseWriter, r *http.Request) {
+    r.ParseForm()
+    
+    op := r.Form["op"][0]
+    pay := r.Form["pay"][0]
+    
+    if pay == "" {
+        pay = "50000" //placeholder value
+    }
+    
+    db, err := sql.Open("sqlite3", "file:airship.db?cache=shared&mode=rwc")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer db.Close()
+    
+    JoinQueryResults := make([]JoinQuery, 0)
+    fmt.Println("select Name, Role, Annual_Salary from crew inner join crew_roles on crew.Employee_ID = crew_roles.EmployeeID where Annual_Salary " + op + " " + pay)
+    rows, err := db.Query("select Name, Role, Annual_Salary from crew inner join crew_roles on crew.Employee_ID = crew_roles.Employee_ID where Annual_Salary " + op + " " + pay)
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    columns, _ := rows.Columns()
+    fmt.Println(columns)
+    defer rows.Close()
+    
+    for rows.Next() {
+        var Name, Role string
+        var Annual_Salary float64
+        
+        rows.Scan(&Name, &Role, &Annual_Salary)
+        res := JoinQuery{Name, Role, Annual_Salary}
+        JoinQueryResults = append(JoinQueryResults, res)
+    }
+    fmt.Println(JoinQueryResults)
+    results := queryResults { ColumnHeaders: columns, JoinQueryResults : JoinQueryResults }
+    
+    p := &Page{ Title: "query2", QueryResults : results }
+    renderTemplate(w, "query-tables", p)
+}
+
 func main() {
     fs := http.FileServer(http.Dir("css"))
     http.Handle("/css/", http.StripPrefix("/css/", fs))
@@ -287,7 +358,10 @@ func main() {
     http.HandleFunc("/query-tables/", makeHandler(basicHandler))  
     
     http.HandleFunc("/view-tables/getTable", getTable)
-    http.HandleFunc("/", insertIntoTable)
+    http.HandleFunc("/insert-into-tables/inserted/", insertIntoTable)
+    http.HandleFunc("/query-tables/query1/", queryTable1)
+    //http.HandleFunc("/query-tables/query2/", queryTable2)
+    http.HandleFunc("/", queryTable2)
 
     fmt.Println("Server listening on port 8080...")
 	http.ListenAndServe(":8080", nil)
@@ -327,4 +401,8 @@ type Passenger struct {
     Ticket_Number int32
     Name string
     Room_Number int32
+}
+type JoinQuery struct {
+    Name, Role string
+    Annual_Salary float64
 }
