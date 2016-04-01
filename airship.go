@@ -232,7 +232,7 @@ func insertIntoTable(w http.ResponseWriter, r *http.Request) {
         }
         
         if maxOcc == int32(len(PassengerResults)) {
-            InsertMessage = "Cannot add! Room is filled!"
+            InsertMessage = "Unable to book passenger! Room is already full!"
         } else {
             ticketNum := passengerCount + 1
             _, err = db.Exec("insert into Passengers(Ticket_Number, Name, Room_Number) values (" + strconv.Itoa(ticketNum) + ", '" + passName + "', " + roomNum + ")")
@@ -240,7 +240,7 @@ func insertIntoTable(w http.ResponseWriter, r *http.Request) {
                 log.Fatal(err)
                 InsertMessage = "Failed to insert!"
             } else {
-                InsertMessage = "Successfully inserted!"
+                InsertMessage = "Successfully booked passenger!"
             }
         }
         
