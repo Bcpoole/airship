@@ -201,4 +201,22 @@ func main() {
 	}
     
     fmt.Println("Done!")
+    
+    fmt.Printf("Creating Views... ")
+    
+    createCrewNameRole := "create view CrewNameRole as select crew.Employee_ID, Name, Role from crew inner join crew_roles on crew.Employee_ID = crew_roles.Employee_ID"
+    _, err = db.Exec(createCrewNameRole)
+	if err != nil {
+		log.Printf("%q: %s\n", err, createCrewNameRole)
+		return
+	}
+    
+    createRoomStatus := "create view RoomStatus as select guest_rooms.room_number, Name from guest_rooms left outer join passengers on guest_rooms.room_number = passengers.room_number"
+    _, err = db.Exec(createRoomStatus)
+	if err != nil {
+		log.Printf("%q: %s\n", err, createRoomStatus)
+		return
+	}
+    
+    fmt.Println("Done!")
 }
