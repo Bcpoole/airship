@@ -51,28 +51,8 @@ func loadPage(title string) (*Page, error) {
 }
 
 func basicHandler(w http.ResponseWriter, r *http.Request, title string) {
-	p := &Page{Title: title, Body: nil}
+	p := &Page{Title: title}
 	renderTemplate(w, title, p)
-}
-
-func viewTableHandler(w http.ResponseWriter, r *http.Request, title string) {
-	p, err := loadPage(title)
-    
-	if err != nil {
-		http.Redirect(w, r, "/view-table/"+title, http.StatusFound)
-		return
-	}
-	renderTemplate(w, "view-table", p)
-}
-
-func queryTablesHandler(w http.ResponseWriter, r *http.Request, title string) {
-	p, err := loadPage(title)
-    
-	if err != nil {
-		http.Redirect(w, r, "/query-tables/", http.StatusFound)
-		return
-	}
-	renderTemplate(w, "query-tables", p)
 }
 
 var templates = template.Must(template.ParseFiles("home.html",
@@ -97,11 +77,7 @@ func makeHandler(fn func(http.ResponseWriter, *http.Request, string)) http.Handl
             http.NotFound(w, r)
             return
         }
-        if (m[2] != "") {
-            fn(w, r, m[2]) 
-        } else {
-            fn(w, r, m[1])
-        }      
+        fn(w, r, m[1])
 	}
 }
 
@@ -270,7 +246,6 @@ func insertIntoTable(w http.ResponseWriter, r *http.Request) {
         
         p := &Page{ InsertMessage: InsertMessage }
         renderTemplate(w, "insert-into-tables", p)
-        //http.Redirect(w, r, "/insert-into-tables/", 301)
     } else if r.Method == "GET" {
         
     }
@@ -278,74 +253,79 @@ func insertIntoTable(w http.ResponseWriter, r *http.Request) {
 
 //query-tables
 func queryTable1(w http.ResponseWriter, r *http.Request) {
-    r.ParseForm()
-    
-    fov := r.Form["fov"][0]
-    
-    db, err := sql.Open("sqlite3", "file:airship.db?cache=shared&mode=rwc")
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer db.Close()
-    
-    CannonResults := make([]Cannon, 0)
-    rows, err := db.Query("select * from cannons where Field_of_View = '" + fov + "'")
-    columns, _ := rows.Columns()
-    defer rows.Close()
-    
-    for rows.Next() {
-        var Field_of_View string
-        var Floor_Number, Crew_Member int32
+    if r.Method == "POST" {
+        r.ParseForm()
         
-        rows.Scan(&Field_of_View, &Floor_Number, &Crew_Member)
-        res := Cannon{Field_of_View, Floor_Number, Crew_Member}
-        CannonResults = append(CannonResults, res)
+        fov := r.Form["fov"][0]
+        
+        db, err := sql.Open("sqlite3", "file:airship.db?cache=shared&mode=rwc")
+        if err != nil {
+            log.Fatal(err)
+        }
+        defer db.Close()
+        
+        CannonResults := make([]Cannon, 0)
+        rows, err := db.Query("select * from cannons where Field_of_View = '" + fov + "'")
+        columns, _ := rows.Columns()
+        defer rows.Close()
+        
+        for rows.Next() {
+            var Field_of_View string
+            var Floor_Number, Crew_Member int32
+            
+            rows.Scan(&Field_of_View, &Floor_Number, &Crew_Member)
+            res := Cannon{Field_of_View, Floor_Number, Crew_Member}
+            CannonResults = append(CannonResults, res)
+        }
+        results := queryResults { ColumnHeaders: columns, CannonResults : CannonResults }
+        
+        p := &Page{ Title: "query1", QueryResults : results }
+        renderTemplate(w, "query-tables", p)
+    } else if r.Method == "GET" {
+        
     }
-    results := queryResults { ColumnHeaders: columns, CannonResults : CannonResults }
-    
-    p := &Page{ Title: "query1", QueryResults : results }
-    renderTemplate(w, "query-tables", p)
 }
 func queryTable2(w http.ResponseWriter, r *http.Request) {
-    r.ParseForm()
-    
-    op := r.Form["op"][0]
-    pay := r.Form["pay"][0]
-    
-    if pay == "" {
-        pay = "50000" //placeholder value
-    }
-    
-    db, err := sql.Open("sqlite3", "file:airship.db?cache=shared&mode=rwc")
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer db.Close()
-    
-    JoinQueryResults := make([]JoinQuery, 0)
-    fmt.Println("select Name, Role, Annual_Salary from crew inner join crew_roles on crew.Employee_ID = crew_roles.EmployeeID where Annual_Salary " + op + " " + pay)
-    rows, err := db.Query("select Name, Role, Annual_Salary from crew inner join crew_roles on crew.Employee_ID = crew_roles.Employee_ID where Annual_Salary " + op + " " + pay)
-    if err != nil {
-        log.Fatal(err)
-    }
-    
-    columns, _ := rows.Columns()
-    fmt.Println(columns)
-    defer rows.Close()
-    
-    for rows.Next() {
-        var Name, Role string
-        var Annual_Salary float64
+    if r.Method == "POST" {
+        r.ParseForm()
         
-        rows.Scan(&Name, &Role, &Annual_Salary)
-        res := JoinQuery{Name, Role, Annual_Salary}
-        JoinQueryResults = append(JoinQueryResults, res)
+        op := r.Form["op"][0]
+        pay := r.Form["pay"][0]
+        
+        if pay == "" {
+            pay = "50000" //placeholder value
+        }
+        
+        db, err := sql.Open("sqlite3", "file:airship.db?cache=shared&mode=rwc")
+        if err != nil {
+            log.Fatal(err)
+        }
+        defer db.Close()
+        
+        JoinQueryResults := make([]JoinQuery, 0)
+        rows, err := db.Query("select Name, Role, Annual_Salary from crew inner join crew_roles on crew.Employee_ID = crew_roles.Employee_ID where Annual_Salary " + op + " " + pay)
+        if err != nil {
+            log.Fatal(err)
+        }
+        
+        columns, _ := rows.Columns()
+        defer rows.Close()
+        
+        for rows.Next() {
+            var Name, Role string
+            var Annual_Salary float64
+            
+            rows.Scan(&Name, &Role, &Annual_Salary)
+            res := JoinQuery{Name, Role, Annual_Salary}
+            JoinQueryResults = append(JoinQueryResults, res)
+        }
+        results := queryResults { ColumnHeaders: columns, JoinQueryResults : JoinQueryResults }
+        
+        p := &Page{ Title: "query2", QueryResults : results }
+        renderTemplate(w, "query-tables", p)
+    } else if r.Method == "GET" {
+        
     }
-    fmt.Println(JoinQueryResults)
-    results := queryResults { ColumnHeaders: columns, JoinQueryResults : JoinQueryResults }
-    
-    p := &Page{ Title: "query2", QueryResults : results }
-    renderTemplate(w, "query-tables", p)
 }
 
 func main() {
@@ -358,10 +338,9 @@ func main() {
     http.HandleFunc("/query-tables/", makeHandler(basicHandler))  
     
     http.HandleFunc("/view-tables/getTable", getTable)
-    http.HandleFunc("/insert-into-tables/inserted/", insertIntoTable)
-    http.HandleFunc("/query-tables/query1/", queryTable1)
-    //http.HandleFunc("/query-tables/query2/", queryTable2)
-    http.HandleFunc("/", queryTable2)
+    http.HandleFunc("/insert-into-tables/insertIntoTable", insertIntoTable)
+    http.HandleFunc("/query-tables/queryTable1", queryTable1)
+    http.HandleFunc("/query-tables/queryTable2", queryTable2)
 
     fmt.Println("Server listening on port 8080...")
 	http.ListenAndServe(":8080", nil)
