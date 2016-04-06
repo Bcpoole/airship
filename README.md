@@ -1,4 +1,4 @@
-*This was a Go + SQLite program written for my CS 457 Database Management Systems class opposed to doing it in PHP and MySQL. I may or may not come back to this and improve it slightly.*
+*This was a Go and SQLite web app written for my CS 457 Database Management Systems class opposed to doing it in PHP and MySQL. I may or may not come back to this and improve it slightly.*
 
 #Setup
 
@@ -13,6 +13,6 @@ If you ever wish to reset the database just rerun `go build createDB.go && creat
 
 #Features
 
-*View all tables
-*Insert into a table
-*Use dropdown queries on two different tables
+* View all tables
+* Insert into a table
+* Use dropdown queries on two different tables
