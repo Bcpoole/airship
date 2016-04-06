@@ -4,12 +4,19 @@
 
 To build and run do the following commands:
 
+##Build
 ```
+go get github.com/mattn/go-sqlite3
 go build createDB.go && createDB
-go build airship.go && airship
+go build airship.go
 ```
 
-If you ever wish to reset the database just rerun `go build createDB.go && createDB`
+##Run
+```
+airship
+```
+
+If you ever wish to reset the database just rerun `createDB`
 
 #Features
 
