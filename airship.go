@@ -19,6 +19,7 @@ type Page struct {
     QueryResults queryResults
     
     InsertMessage string
+    MyQuery string
 }
 
 type queryResults struct {
@@ -264,8 +265,9 @@ func queryTable1(w http.ResponseWriter, r *http.Request) {
         }
         defer db.Close()
         
+        MyQuery := "select * from cannons where Field_of_View = '" + fov + "'"
         CannonResults := make([]Cannon, 0)
-        rows, err := db.Query("select * from cannons where Field_of_View = '" + fov + "'")
+        rows, err := db.Query(MyQuery)
         columns, _ := rows.Columns()
         defer rows.Close()
         
@@ -279,7 +281,7 @@ func queryTable1(w http.ResponseWriter, r *http.Request) {
         }
         results := queryResults { ColumnHeaders: columns, CannonResults : CannonResults }
         
-        p := &Page{ Title: "query1", QueryResults : results }
+        p := &Page{ Title: "query1", QueryResults : results, MyQuery : MyQuery }
         renderTemplate(w, "query-tables", p)
     } else if r.Method == "GET" {
         
@@ -302,8 +304,9 @@ func queryTable2(w http.ResponseWriter, r *http.Request) {
         }
         defer db.Close()
         
+        MyQuery := "select Name, Role, Annual_Salary from crew inner join crew_roles on crew.Employee_ID = crew_roles.Employee_ID where Annual_Salary " + op + " " + pay
         JoinQueryResults := make([]JoinQuery, 0)
-        rows, err := db.Query("select Name, Role, Annual_Salary from crew inner join crew_roles on crew.Employee_ID = crew_roles.Employee_ID where Annual_Salary " + op + " " + pay)
+        rows, err := db.Query(MyQuery)
         if err != nil {
             log.Fatal(err)
         }
@@ -321,7 +324,7 @@ func queryTable2(w http.ResponseWriter, r *http.Request) {
         }
         results := queryResults { ColumnHeaders: columns, JoinQueryResults : JoinQueryResults }
         
-        p := &Page{ Title: "query2", QueryResults : results }
+        p := &Page{ Title: "query2", QueryResults : results, MyQuery : MyQuery }
         renderTemplate(w, "query-tables", p)
     } else if r.Method == "GET" {
         
@@ -331,6 +334,8 @@ func queryTable2(w http.ResponseWriter, r *http.Request) {
 func main() {
     fs := http.FileServer(http.Dir("css"))
     http.Handle("/css/", http.StripPrefix("/css/", fs))
+    sem := http.FileServer(http.Dir("semantic/dist"))
+    http.Handle("/semantic/dist/", http.StripPrefix("/semantic/dist/", sem))
     
     http.HandleFunc("/home/", makeHandler(basicHandler))
     http.HandleFunc("/view-tables/", makeHandler(basicHandler))

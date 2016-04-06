@@ -2,38 +2,38 @@
 <html>
 <head>
     <link href="/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
+    <script src="/semantic/dist/semantic.min.js"></script>
     
-    <table class="ui table">
-        <tr>
-            <td><a href="/home/">Home</a></td>
-            <td><a href="/view-tables/">Display Tables</a></td>
-            <td><a href="/query-tables/">Query Tables</a></td>
-            <td><a href="/insert-into-tables/">Insert into Tables</a></td>
-        </tr>
-    </table>
+    <div class="ui four item menu">
+        <a class="item" href="/home/">Home</a>
+        <a class="item" href="/view-tables/">View Tables</a>
+        <a class="active item" href="/query-tables/">Query Tables</a>
+        <a class="item" href="/insert-into-tables/">Insert into Tables</a>
+    </div>
 </head>
 <body>
 <p>
     <i>SELECT * FROM <b>Cannons</b> WHERE <b>Field_of_View</b> = <b>?</b></i>
     <form action="queryTable1" method="post">
         <div>
-            <label>Field of View: </label>
-            <select name="fov">
+            <label class="ui label">Field of View: </label>
+            <select class="ui dropdown" name="fov">
                 <option value="Bow">Bow</option>
                 <option value="Port">Port</option>
                 <option value="Starboard">Starboard</option>
                 <option value="Stern">Stern</option>
             </select>
         </div>
-        <input type="submit" value="Submit">
+        <input class="ui button" type="submit" value="Submit">
     </form>
 </p>
 <p>
     <i>SELECT <b>Name</b>, <b>Role</b>, <b>Annual_Salary</b> FROM <b>crew</b> INNER JOIN <b>crew_roles</b> ON <b>crew.Employee_ID</b> = <b>crew_roles.Employee_ID</b> WHERE <b>Annual_Salary</b> ? ?</i>
     <form action="queryTable2" method="post">
         <div>
-            <label>Operator: </label>
-            <select name="op">
+            <label class="ui label">Operator: </label>
+            <select class="ui dropdown" name="op">
                 <option value="=">=</option>
                 <option value="<">&lt;</option>
                 <option value="<=">&lt;=</option>
@@ -42,14 +42,17 @@
             </select>
         </div>
         <div>
-            <label>Value: </label>
+            <label class="ui label">Value: </label>
         <div class="ui input">
             <input type="number" placeholder="50000" name="pay"/>
         </div>
         </div>
-        <input type="submit" value="Submit">
+        <input class="ui button" type="submit" value="Submit">
     </form>
 </p>
+<div class="ui teal image label">
+    {{.MyQuery}}
+</div>
 <table class="ui celled striped table">
     <tr>
         {{range .QueryResults.ColumnHeaders}}

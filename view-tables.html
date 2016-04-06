@@ -2,22 +2,22 @@
 <html>
 <head>
     <link href="/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
+    <script src="/semantic/dist/semantic.min.js"></script>
     
-    <table class="ui table">
-        <tr>
-            <td><a href="/home/">Home</a></td>
-            <td><a href="/view-tables/">Display Tables</a></td>
-            <td><a href="/query-tables/">Query Tables</a></td>
-            <td><a href="/insert-into-tables/">Insert into Tables</a></td>
-        </tr>
-    </table>
+    <div class="ui four item menu">
+        <a class="item" href="/home/">Home</a>
+        <a class="active item" href="/view-tables/">View Tables</a>
+        <a class="item" href="/query-tables/">Query Tables</a>
+        <a class="item" href="/insert-into-tables/">Insert into Tables</a>
+    </div>
 </head>
 <body>
 
 <div>Select a table to view the data of:</div>
 
 <form action="getTable" method="post">
-    <select name="tables">
+    <select class="ui dropdown" name="tables">
         <option value="crew">Crew</option>
         <option value="crew_roles">Crew Roles</option>
         <option value="crew_assigned_floors">Crew Assigned Floors</option>
@@ -27,7 +27,7 @@
         <option value="guest_rooms">Guest Rooms</option>
         <option value="passengers">Passengers</option>
     </select>
-    <input type="submit" value="View">
+    <input class="ui button" type="submit" value="View">
 </form>
 
 {{if eq .Title "view-tables"}}

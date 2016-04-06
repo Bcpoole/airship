@@ -2,29 +2,29 @@
 <html>
 <head>
     <link href="/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/semantic/dist/semantic.min.css">
+    <script src="/semantic/dist/semantic.min.js"></script>
     
-    <table class="ui table">
-        <tr>
-            <td><a href="/home/">Home</a></td>
-            <td><a href="/view-tables/">Display Tables</a></td>
-            <td><a href="/query-tables/">Query Tables</a></td>
-            <td><a href="/insert-into-tables/">Insert into Tables</a></td>
-        </tr>
-    </table>
+    <div class="ui four item menu">
+        <a class="item" href="/home/">Home</a>
+        <a class="item" href="/view-tables/">View Tables</a>
+        <a class="item" href="/query-tables/">Query Tables</a>
+        <a class="active item" href="/insert-into-tables/">Insert into Tables</a>
+    </div>
 </head>
 <body>
 <h1>Insert into Passengers table</h1>
 <i>*Ticket Numbers are automatically generated</i>
 <form action="insertIntoTable" method="post">
     <div>
-        <label>Passenger Name: </label>
+        <label class="ui label">Passenger Name: </label>
         <div class="ui input">
             <input type="text" placeholder="John Doe" name="passName"/>
         </div>
     </div>
     <div>
-        <label>Room Number: </label>
-        <select name="roomNum">
+        <label class="ui label">Room Number: </label>
+        <select class="ui dropdown" name="roomNum">
             <option value="0">0</option>
             <option value="100">100</option>
             <option value="101">101</option>
@@ -38,7 +38,7 @@
             <option value="205">205</option>
         </select>
     </div>
-    <input type="submit" value="Submit">
+    <input class="ui button" type="submit" value="Submit">
 </form>
 <div>
     {{.InsertMessage}}
